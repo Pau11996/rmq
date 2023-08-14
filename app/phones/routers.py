@@ -20,7 +20,7 @@ async def consume_report_data(session: Session = Depends(get_postgres_session)):
 
     start_date = datetime.now()
     connection = await aio_pika.connect_robust(
-        "amqp://guest:guest@rabbitmq/",
+        os.getenv('RABBIT_MQ_URL')
     )
     queue_name = os.getenv('QUEUE_NAME')
 
@@ -38,7 +38,8 @@ async def consume_report_data(session: Session = Depends(get_postgres_session)):
 
                     for phone in input_data["phones"]:
                         report = await generate_report(session, phone)
-                        results.append(report.model_dump())
+                        if report is not None:
+                            results.append(report.model_dump())
 
                     if queue.name in message.body.decode():
                         break

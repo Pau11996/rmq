@@ -13,7 +13,7 @@ input_data = {
 
 async def publish_messages(message_body) -> None:
     connection = await aio_pika.connect_robust(
-        "amqp://guest:guest@rabbitmq/",
+        os.getenv('RABBIT_MQ_URL'),
     )
     message_body = json.dumps(message_body).encode('utf-8')
 
