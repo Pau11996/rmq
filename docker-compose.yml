@@ -1,0 +1,43 @@
+version: "3.8"
+
+services:
+  db_postgres:
+    image: postgres:15.1
+    container_name: test_postgres
+    env_file:
+      - .env
+    volumes:
+      - ./postgres:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+
+  back:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: test_app
+    restart: on-failure
+    command: sh ./entrypoint.sh
+    user: "${UID}:${GID}"
+    volumes:
+    - .:/app_back
+    env_file:
+      - .env
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db_postgres
+
+  rabbitmq:
+    image: "rabbitmq:management"
+    ports:
+      - "5672:5672"  # AMQP port
+      - "15672:15672"  # Management UI port
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+
+volumes:
+  rabbitmq_data:
